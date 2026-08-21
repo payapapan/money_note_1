@@ -348,21 +348,25 @@ const CATS = {
        ["プレゼント","プレゼント","🎁","#FFE0F0"],["そのた","その他","✨","#EAF2FF"]]
 };
 let state = { entries: [], goal: null, level: "low" };
-let mem = null; // storage が使えない時の退避
-
 /* 表示レベル：low=ひらがな / high=漢字 */
 const L = (kana, kanji) => state.level === "high" ? kanji : kana;
 
-async function load(){
+/* 保存先はブラウザの localStorage（この端末・このブラウザの中だけに残ります） */
+function load(){
   try{
-    const r = await window.storage.get(KEY);
-    if(r && r.value) state = Object.assign({entries:[],goal:null,level:"low"}, JSON.parse(r.value));
-  }catch(e){ /* 初回はキーが無いので通常動作 */ }
+    const raw = localStorage.getItem(KEY);
+    if(raw) state = Object.assign({entries:[], goal:null, level:"low"}, JSON.parse(raw));
+  }catch(e){
+    console.warn("ほぞんデータを よみこめませんでした:", e);
+  }
 }
-async function save(){
-  const json = JSON.stringify(state);
-  mem = json;
-  try{ await window.storage.set(KEY, json); }catch(e){ console.log("保存は このセッションのみ"); }
+function save(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }catch(e){
+    // プライベートブラウズ・容量オーバー・サンドボックス内などで失敗する
+    console.warn("ほぞんできませんでした（このセッションのみ有効です）:", e);
+  }
 }
 
 /* ========= 便利関数 ========= */
