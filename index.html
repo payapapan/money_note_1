@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>おこづかいちょう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Yomogi&family=M+PLUS+Rounded+1c:wght@800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF7F0;
+  --strawberry:#FF8FA8;
+  --strawberry-deep:#F2698A;
+  --grape:#9B7EDE;
+  --mint:#6FCFBC;
+  --lemon:#FFD166;
+  --ink:#5A4152;
+  --ink-soft:#9B8794;
+  --white:#fff;
+  --shadow-pink:#F0D3DC;
+  --shadow-mint:#C7EAE2;
+  --shadow-grape:#DCD1F2;
+  --r:26px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;
+  color:var(--ink);
+  background-color:var(--cream);
+  background-image:radial-gradient(circle, rgba(155,126,222,.13) 1.4px, transparent 1.5px);
+  background-size:22px 22px;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer;}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--grape);outline-offset:3px;border-radius:12px;}
+
+/* ---------- レイアウト ---------- */
+.app{max-width:520px;margin:0 auto;padding:18px 18px 118px;}
+.screen{display:none;}
+.screen.on{display:block;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* ---------- ヘッダー ---------- */
+.head{position:relative;text-align:center;padding:14px 0 20px;}
+.head h1{
+  font-family:"Yomogi",cursive;font-size:27px;margin:0;letter-spacing:.06em;
+  color:var(--ink);
+}
+.head .sub{font-size:12px;color:var(--ink-soft);margin-top:2px;letter-spacing:.14em;}
+.tape{
+  position:absolute;width:74px;height:22px;top:2px;opacity:.72;mix-blend-mode:multiply;
+  background:repeating-linear-gradient(115deg,var(--strawberry) 0 6px,rgba(255,255,255,.75) 6px 12px);
+}
+.tape.l{left:14px;transform:rotate(-8deg);}
+.tape.r{right:58px;transform:rotate(7deg);
+  background:repeating-linear-gradient(115deg,var(--mint) 0 6px,rgba(255,255,255,.75) 6px 12px);}
+
+/* ---------- 残高カード ---------- */
+.wallet{
+  background:var(--white);border-radius:var(--r);padding:20px 22px 22px;
+  box-shadow:0 7px 0 var(--shadow-pink), 0 16px 26px rgba(160,110,130,.13);
+  position:relative;overflow:hidden;
+}
+.wallet .lbl{font-size:13px;color:var(--ink-soft);letter-spacing:.1em;}
+.amount-row{display:flex;align-items:baseline;gap:6px;margin-top:2px;}
+.amount{font-family:"M PLUS Rounded 1c",sans-serif;font-weight:800;font-size:46px;line-height:1.1;color:var(--strawberry-deep);}
+.amount.minus{color:#C86A9B;}
+.yen{font-size:17px;font-weight:700;color:var(--ink-soft);}
+.coin-fly{position:absolute;right:26px;top:-30px;font-size:26px;pointer-events:none;}
+@keyframes drop{0%{transform:translateY(0) rotate(0);opacity:0}
+20%{opacity:1}100%{transform:translateY(96px) rotate(300deg);opacity:0}}
+
+.goal-mini{margin-top:16px;border-top:2px dotted #F1DEE6;padding-top:13px;}
+.goal-mini .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;}
+.goal-mini .name{font-weight:700;}
+.goal-mini .rest{color:var(--grape);font-weight:700;}
+.bar{height:15px;border-radius:99px;background:#F5EAF0;margin-top:8px;overflow:hidden;}
+.bar span{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--lemon),var(--strawberry));
+  transition:width .6s cubic-bezier(.34,1.56,.64,1);}
+.goal-mini .none{font-size:13px;color:var(--ink-soft);}
+.goal-mini .none b{color:var(--grape);cursor:pointer;text-decoration:underline dotted;}
+
+/* ---------- 大きいボタン ---------- */
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:22px 0 8px;}
+.big{
+  border-radius:22px;padding:17px 0 15px;font-size:19px;font-weight:900;color:var(--white);
+  display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .08s, box-shadow .08s;
+}
+.big small{font-size:11px;font-weight:700;opacity:.9;letter-spacing:.1em;}
+.big.in{background:var(--mint);box-shadow:0 6px 0 #4BB6A1;}
+.big.out{background:var(--strawberry);box-shadow:0 6px 0 #E4718E;}
+.big:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.15);}
+
+/* ---------- シール帳 ---------- */
+.sec-title{
+  font-family:"Yomogi",cursive;font-size:17px;margin:26px 0 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.sec-title::after{content:"";flex:1;height:2px;background:repeating-linear-gradient(90deg,#E9D8E2 0 7px,transparent 7px 13px);}
+.stickers{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;}
+@media(min-width:430px){.stickers{grid-template-columns:repeat(3,1fr);}}
+.sticker{
+  border:5px solid var(--white);border-radius:24px;padding:13px 8px 11px;text-align:center;
+  filter:drop-shadow(0 4px 7px rgba(150,110,130,.22));
+  position:relative;transition:transform .14s;
+}
+.sticker:active{transform:scale(.94) !important;}
+.sticker .emo{font-size:31px;display:block;line-height:1.2;}
+.sticker .cat{font-size:12px;font-weight:700;margin-top:3px;}
+.sticker .val{font-family:"M PLUS Rounded 1c",sans-serif;font-weight:800;font-size:19px;margin-top:3px;}
+.sticker .day{position:absolute;top:5px;right:9px;font-size:10px;color:rgba(90,65,82,.5);}
+.sticker.pop{animation:pop .45s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pop{0%{transform:scale(.3) rotate(-14deg);opacity:0}100%{opacity:1}}
+.empty{
+  border:3px dashed #E3CFDD;border-radius:24px;padding:34px 18px;text-align:center;
+  color:var(--ink-soft);font-size:13.5px;line-height:1.8;grid-column:1/-1;
+}
+.empty .face{font-size:30px;display:block;margin-bottom:6px;}
+
+/* ---------- タブバー ---------- */
+.tabs{
+  position:fixed;left:0;right:0;bottom:0;background:var(--white);
+  border-radius:26px 26px 0 0;box-shadow:0 -4px 20px rgba(150,110,130,.16);
+  display:flex;padding:9px 8px calc(9px + env(safe-area-inset-bottom));z-index:20;
+}
+.tabs .in{max-width:520px;margin:0 auto;display:flex;width:100%;}
+.tab{flex:1;text-align:center;padding:7px 0 4px;font-size:11px;font-weight:700;color:var(--ink-soft);border-radius:16px;}
+.tab i{display:block;font-size:22px;font-style:normal;filter:grayscale(.75);opacity:.6;transition:.15s;}
+.tab.on{color:var(--strawberry-deep);}
+.tab.on i{filter:none;opacity:1;transform:translateY(-2px);}
+
+/* ---------- 入力シート ---------- */
+.veil{position:fixed;inset:0;background:rgba(90,65,82,.42);opacity:0;pointer-events:none;transition:.22s;z-index:30;}
+.veil.on{opacity:1;pointer-events:auto;}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--cream);
+  border-radius:30px 30px 0 0;padding:10px 18px calc(20px + env(safe-area-inset-bottom));
+  max-width:520px;margin:0 auto;transform:translateY(105%);transition:transform .3s cubic-bezier(.3,1.2,.5,1);
+  max-height:94vh;overflow-y:auto;
+}
+.sheet.on{transform:none;}
+.grip{width:46px;height:5px;border-radius:99px;background:#E5D3DE;margin:4px auto 12px;}
+.sheet h2{font-family:"Yomogi",cursive;font-size:19px;margin:0 0 12px;text-align:center;}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+.cat-b{
+  background:var(--white);border-radius:18px;padding:10px 2px 8px;text-align:center;
+  box-shadow:0 3px 0 #EEDDE6;transition:.12s;
+}
+.cat-b span{display:block;font-size:24px;}
+.cat-b b{font-size:10.5px;font-weight:700;display:block;margin-top:2px;}
+.cat-b.sel{box-shadow:0 0 0 3px var(--grape), 0 3px 0 #EEDDE6;transform:translateY(-2px);}
+.disp{
+  background:var(--white);border-radius:20px;margin:15px 0 6px;padding:13px 20px;
+  display:flex;align-items:baseline;justify-content:flex-end;gap:5px;box-shadow:0 4px 0 #EEDDE6;
+}
+.disp b{font-family:"M PLUS Rounded 1c",sans-serif;font-size:36px;font-weight:800;}
+.disp i{font-style:normal;font-size:15px;color:var(--ink-soft);font-weight:700;}
+.warn{font-size:12px;color:var(--strawberry-deep);text-align:right;min-height:17px;padding-right:4px;}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:6px;}
+.key{
+  background:var(--white);border-radius:18px;padding:14px 0;font-size:23px;font-weight:800;
+  font-family:"M PLUS Rounded 1c",sans-serif;box-shadow:0 4px 0 #EEDDE6;transition:.08s;
+}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #EEDDE6;}
+.key.fn{font-size:17px;color:var(--grape);}
+.done{
+  width:100%;margin-top:13px;border-radius:20px;padding:16px 0;font-size:18px;font-weight:900;color:#fff;
+  background:var(--grape);box-shadow:0 6px 0 #7C5FC0;transition:.08s;
+}
+.done:active{transform:translateY(5px);box-shadow:0 1px 0 #7C5FC0;}
+.done:disabled{background:#D8CDE4;box-shadow:0 6px 0 #C4B6D4;cursor:default;}
+.cancel{display:block;width:100%;text-align:center;padding:12px;font-size:14px;color:var(--ink-soft);font-weight:700;}
+
+/* ---------- もくひょう ---------- */
+.card{background:var(--white);border-radius:var(--r);padding:22px;box-shadow:0 7px 0 var(--shadow-grape),0 16px 26px rgba(160,110,130,.12);}
+.piggy{display:block;margin:0 auto;width:210px;max-width:78%;}
+.goal-name{text-align:center;font-family:"Yomogi",cursive;font-size:21px;margin:8px 0 2px;}
+.goal-fig{text-align:center;font-size:14px;color:var(--ink-soft);}
+.goal-fig b{font-family:"M PLUS Rounded 1c",sans-serif;font-size:22px;color:var(--grape);}
+.field{margin-top:14px;}
+.field label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:5px;}
+.field input{
+  width:100%;border:none;background:#FBF3F7;border-radius:16px;padding:14px 16px;font-size:17px;
+  font-family:inherit;font-weight:700;color:var(--ink);box-shadow:inset 0 2px 0 #EEDDE6;
+}
+.field input:focus{outline:3px solid var(--grape);outline-offset:1px;}
+.emo-pick{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;}
+.emo-pick button{font-size:23px;background:#FBF3F7;border-radius:14px;width:44px;height:44px;}
+.emo-pick button.sel{box-shadow:0 0 0 3px var(--grape);}
+.mini-btn{
+  display:block;width:100%;margin-top:16px;border-radius:18px;padding:14px 0;font-weight:900;font-size:16px;
+  color:#fff;background:var(--strawberry);box-shadow:0 5px 0 #E4718E;
+}
+.mini-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #E4718E;}
+.mini-btn.ghost{background:none;color:var(--ink-soft);box-shadow:none;font-size:13.5px;font-weight:700;}
+.mini-btn.ghost:active{transform:none;}
+.done-badge{
+  text-align:center;font-family:"Yomogi",cursive;font-size:20px;color:var(--strawberry-deep);
+  background:#FFF0F5;border-radius:18px;padding:11px;margin-top:14px;
+}
+
+/* ---------- スタンプ ---------- */
+.stamp-card{
+  background:var(--white);border-radius:var(--r);padding:20px;
+  box-shadow:0 7px 0 var(--shadow-mint),0 16px 26px rgba(120,170,160,.14);
+}
+.stamp-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px;}
+.slot{
+  aspect-ratio:1;border-radius:50%;border:2.5px dashed #DFD1DA;display:flex;align-items:center;
+  justify-content:center;font-size:24px;color:transparent;
+}
+.slot.fill{border:2.5px solid transparent;background:#FFF2F6;color:inherit;animation:stamp .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes stamp{0%{transform:scale(1.7);opacity:0}100%{transform:none;opacity:1}}
+.stamp-note{font-size:13px;color:var(--ink-soft);line-height:1.8;margin-top:14px;text-align:center;}
+.stamp-note b{color:var(--strawberry-deep);}
+
+/* ---------- 明細ポップ ---------- */
+.pop-wrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:40;padding:30px;}
+.pop-wrap.on{display:flex;}
+.pop-card{background:#fff;border-radius:26px;padding:24px;text-align:center;max-width:280px;width:100%;
+  box-shadow:0 12px 30px rgba(90,65,82,.3);animation:pop .3s cubic-bezier(.34,1.56,.64,1);}
+.pop-card .e{font-size:44px;}
+.pop-card .c{font-weight:700;margin-top:4px;}
+.pop-card .v{font-family:"M PLUS Rounded 1c",sans-serif;font-size:28px;font-weight:800;margin:4px 0;}
+.pop-card .d{font-size:12px;color:var(--ink-soft);}
+.pop-card .row{display:flex;gap:10px;margin-top:18px;}
+.pop-card .row button{flex:1;border-radius:16px;padding:12px 0;font-weight:800;font-size:14px;}
+.del{background:#FFEDF2;color:var(--strawberry-deep);}
+.close{background:#F3EDF7;color:var(--ink-soft);}
+
+/* ---------- 紙吹雪 ---------- */
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
+.confetti span{position:absolute;top:-40px;font-size:22px;animation:fall 2.2s linear forwards;}
+@keyframes fall{to{transform:translateY(105vh) rotate(560deg);opacity:.1}}
+
+/* ---------- せってい ---------- */
+.gear{
+  position:absolute;right:0;top:12px;width:40px;height:40px;border-radius:14px;
+  background:var(--white);box-shadow:0 3px 0 var(--shadow-pink);font-size:18px;line-height:1;
+}
+.gear:active{transform:translateY(3px);box-shadow:0 0 0 var(--shadow-pink);}
+.lv{display:grid;gap:11px;margin-top:4px;}
+.lv button{background:var(--white);border-radius:20px;padding:15px 17px;text-align:left;box-shadow:0 4px 0 #EEDDE6;transition:.12s;}
+.lv button.sel{box-shadow:0 0 0 3px var(--grape),0 4px 0 #EEDDE6;}
+.lv b{display:block;font-size:16.5px;font-weight:900;margin-bottom:3px;}
+.lv small{font-size:12px;color:var(--ink-soft);line-height:1.6;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== ちょう ===== -->
+  <section class="screen on" id="s-book">
+    <div class="head">
+      <span class="tape l"></span><span class="tape r"></span>
+      <button class="gear" id="gearBtn" aria-label="せってい">⚙️</button>
+      <h1 id="h-book">おこづかいちょう</h1>
+      <div class="sub" id="today"></div>
+    </div>
+
+    <div class="wallet">
+      <div class="lbl" id="t-have">いま もっている おかね</div>
+      <div class="amount-row"><span class="amount" id="bal">0</span><span class="yen" id="t-yen1">えん</span></div>
+      <div class="goal-mini" id="goalMini"></div>
+    </div>
+
+    <div class="actions">
+      <button class="big in" data-open="in" id="t-in">もらった<small>プラス</small></button>
+      <button class="big out" data-open="out" id="t-out">つかった<small>マイナス</small></button>
+    </div>
+
+    <h2 class="sec-title" id="t-sec">きろくシール</h2>
+    <div class="stickers" id="stickers"></div>
+  </section>
+
+  <!-- ===== もくひょう ===== -->
+  <section class="screen" id="s-goal">
+    <div class="head"><h1 id="h-goal">ちょきん もくひょう</h1></div>
+    <div class="card" id="goalCard"></div>
+  </section>
+
+  <!-- ===== スタンプ ===== -->
+  <section class="screen" id="s-stamp">
+    <div class="head"><h1 id="h-stamp">スタンプカード</h1><div class="sub" id="t-stampsub">きろくした ひに 1こ たまるよ</div></div>
+    <div class="stamp-card">
+      <div style="font-family:'Yomogi',cursive;font-size:16px;" id="cardNo"></div>
+      <div class="stamp-grid" id="stampGrid"></div>
+      <div class="stamp-note" id="stampNote"></div>
+    </div>
+  </section>
+
+</div>
+
+<nav class="tabs"><div class="in">
+  <button class="tab on" data-tab="s-book"><i>📖</i><span id="t-tab1">きろく</span></button>
+  <button class="tab" data-tab="s-goal"><i>🐷</i><span id="t-tab2">もくひょう</span></button>
+  <button class="tab" data-tab="s-stamp"><i>🌸</i><span id="t-tab3">スタンプ</span></button>
+</div></nav>
+
+<div class="veil" id="veil"></div>
+
+<!-- 入力シート -->
+<div class="sheet" id="sheet">
+  <div class="grip"></div>
+  <h2 id="sheetTitle"></h2>
+  <div class="cats" id="cats"></div>
+  <div class="disp"><b id="disp">0</b><i id="t-yen2">えん</i></div>
+  <div class="warn" id="warn"></div>
+  <div class="pad" id="pad"></div>
+  <button class="done" id="doneBtn" disabled>シールを はる</button>
+  <button class="cancel" id="cancelBtn">やめる</button>
+</div>
+
+<!-- せっていシート -->
+<div class="sheet" id="setSheet">
+  <div class="grip"></div>
+  <h2 id="setTitle">せってい</h2>
+  <div class="lv" id="lvPick">
+    <button data-lv="low"><b>ひらがな</b><small>ていがくねん むけ。かんじを つかいません。</small></button>
+    <button data-lv="high"><b>漢字（かんじ）</b><small>高学年向け。習った漢字を使います。</small></button>
+  </div>
+  <button class="cancel" id="setClose">とじる</button>
+</div>
+
+<!-- 明細ポップ -->
+<div class="pop-wrap" id="popWrap"><div class="pop-card" id="popCard"></div></div>
+
+<script>
+/* ========= データ ========= */
+const KEY = "okozukai-v1";
+/* [かな表記, 漢字表記, えもじ, いろ]  ※かな表記が保存キー */
+const CATS = {
+  in:[["おこづかい","お小遣い","💰","#FFF3D4"],["おてつだい","お手伝い","🧹","#E4F6F1"],
+      ["おとしだま","お年玉","🧧","#FFE6EA"],["おいわい","お祝い","🎂","#F3E9FF"],
+      ["そのた","その他","✨","#EAF2FF"]],
+  out:[["おかし","お菓子","🍬","#FFE6EA"],["のみもの","飲み物","🧃","#E4F6F1"],
+       ["ぶんぼうぐ","文房具","✏️","#FFF3D4"],["ほん","本・まんが","📚","#F3E9FF"],
+       ["ゲーム","ゲーム","🎮","#E9F7E4"],["おもちゃ","おもちゃ","🧸","#FFEDE0"],
+       ["プレゼント","プレゼント","🎁","#FFE0F0"],["そのた","その他","✨","#EAF2FF"]]
+};
+let state = { entries: [], goal: null, level: "low" };
+let mem = null; // storage が使えない時の退避
+
+/* 表示レベル：low=ひらがな / high=漢字 */
+const L = (kana, kanji) => state.level === "high" ? kanji : kana;
+
+async function load(){
+  try{
+    const r = await window.storage.get(KEY);
+    if(r && r.value) state = Object.assign({entries:[],goal:null,level:"low"}, JSON.parse(r.value));
+  }catch(e){ /* 初回はキーが無いので通常動作 */ }
+}
+async function save(){
+  const json = JSON.stringify(state);
+  mem = json;
+  try{ await window.storage.set(KEY, json); }catch(e){ console.log("保存は このセッションのみ"); }
+}
+
+/* ========= 便利関数 ========= */
+const $ = s => document.querySelector(s);
+const yen = n => n.toLocaleString("ja-JP");
+const todayKey = () => { const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const balance = () => state.entries.reduce((s,e)=> s + (e.type==="in"? e.amount : -e.amount), 0);
+const catInfo = (type,name) => (CATS[type].find(c=>c[0]===name) || ["そのた","その他","✨","#EAF2FF"]);
+const catLabel = (type,name) => { const c = catInfo(type,name); return L(c[0],c[1]); };
+const tilt = id => { let h=0; for(const c of String(id)) h=(h*31+c.charCodeAt(0))%97; return (h%9)-4; };
+
+/* ========= 画面：ちょう ========= */
+function renderBook(newestId){
+  const b = balance();
+  const el = $("#bal");
+  el.textContent = yen(Math.abs(b));
+  el.classList.toggle("minus", b<0);
+
+  // もくひょうバー
+  const gm = $("#goalMini");
+  if(state.goal){
+    const p = Math.max(0, Math.min(100, Math.round(b / state.goal.amount * 100)));
+    const rest = Math.max(0, state.goal.amount - b);
+    gm.innerHTML = `<div class="top"><span class="name">${state.goal.emoji} ${esc(state.goal.name)}</span>
+      <span class="rest">${rest>0? L("あと "+yen(rest)+"えん", "あと"+yen(rest)+"円") : L("たっせい！🎉","達成！🎉")}</span></div>
+      <div class="bar"><span style="width:${p}%"></span></div>`;
+  }else{
+    gm.innerHTML = `<div class="none">${L("ためたい ものは ある？","ためたい物はある？")}
+      <b id="goToGoal">${L("きめてみる","決めてみる")}</b></div>`;
+    $("#goToGoal").onclick = ()=> switchTab("s-goal");
+  }
+
+  // シール
+  const wrap = $("#stickers");
+  if(state.entries.length===0){
+    wrap.innerHTML = `<div class="empty"><span class="face">🐰</span>` +
+      L("まだ シールが ないよ。<br>したの ボタンで きろくしてみよう！",
+        "まだシールがないよ。<br>下のボタンで記録してみよう！") + `</div>`;
+    return;
+  }
+  const list = [...state.entries].sort((a,b)=>b.ts-a.ts);
+  wrap.innerHTML = list.map(e=>{
+    const c = catInfo(e.type, e.cat), emo = c[2], col = c[3];
+    const d = new Date(e.ts);
+    const sign = e.type==="in" ? "+" : "−";
+    const vcol = e.type==="in" ? "#3FA792" : "#E4718E";
+    return `<button class="sticker ${e.id===newestId?"pop":""}" data-id="${e.id}"
+      style="background:${col};transform:rotate(${tilt(e.id)}deg)">
+      <span class="day">${d.getMonth()+1}/${d.getDate()}</span>
+      <span class="emo">${emo}</span>
+      <span class="cat">${esc(L(c[0],c[1]))}</span>
+      <span class="val" style="color:${vcol}">${sign}${yen(e.amount)}</span>
+    </button>`;
+  }).join("");
+  wrap.querySelectorAll(".sticker").forEach(s=> s.onclick = ()=> showDetail(s.dataset.id));
+}
+function esc(s){ return String(s).replace(/[<>&]/g, c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c])); }
+
+/* ========= 画面：もくひょう ========= */
+let goalEmoji = "🎀";
+const EMOJIS = ["🎀","🧸","🎮","📚","🎧","👟","🍰","🚲","💍","🐰"];
+function renderGoal(){
+  const c = $("#goalCard"), b = balance();
+  if(state.goal){
+    const p = Math.max(0, Math.min(100, b / state.goal.amount * 100));
+    const rest = Math.max(0, state.goal.amount - b);
+    c.innerHTML = piggySVG(p) +
+      `<div class="goal-name">${state.goal.emoji} ${esc(state.goal.name)}</div>
+       <div class="goal-fig">${L("もくひょう","目標")} ${yen(state.goal.amount)}${L("えん のうち","円のうち")}
+         <b>${Math.round(p)}%</b></div>` +
+      (rest>0
+        ? `<div class="goal-fig" style="margin-top:8px">あと <b>${yen(rest)}</b> ${L("えん","円")}</div>`
+        : `<div class="done-badge">${L("もくひょう たっせい！おめでとう🎉","目標達成！おめでとう🎉")}</div>`) +
+      `<button class="mini-btn ghost" id="editGoal">${L("もくひょうを かえる","目標を変える")}</button>`;
+    $("#editGoal").onclick = ()=>{ state.goal=null; save(); renderGoal(); };
+  }else{
+    c.innerHTML = `
+      <div style="text-align:center;font-size:40px">🐷</div>
+      <div class="goal-name">${L("なにを ためる？","何をためる？")}</div>
+      <div class="field"><label>${L("ほしいもの","ほしい物")}</label>
+        <input id="gName" maxlength="14" placeholder="${L("れい：あたらしい ふでばこ","例：新しい筆箱")}"></div>
+      <div class="field"><label>${L("いくら ためる？（えん）","いくらためる？（円）")}</label>
+        <input id="gAmt" type="tel" inputmode="numeric" placeholder="${L("れい：3000","例：3000")}"></div>
+      <div class="field"><label>${L("マーク","マーク")}</label>
+        <div class="emo-pick" id="emoPick">${EMOJIS.map(e=>
+          `<button data-e="${e}" class="${e===goalEmoji?"sel":""}">${e}</button>`).join("")}</div></div>
+      <button class="mini-btn" id="setGoal">${L("きめる","決める")}</button>`;
+    $("#emoPick").querySelectorAll("button").forEach(b2=> b2.onclick=()=>{
+      goalEmoji=b2.dataset.e;
+      $("#emoPick").querySelectorAll("button").forEach(x=>x.classList.remove("sel"));
+      b2.classList.add("sel");
+    });
+    $("#setGoal").onclick = ()=>{
+      const n = $("#gName").value.trim(), a = parseInt($("#gAmt").value,10);
+      if(!n || !a || a<=0){ $("#gName").focus(); return; }
+      state.goal = {name:n, amount:a, emoji:goalEmoji};
+      save(); renderGoal(); renderBook();
+    };
+  }
+}
+function piggySVG(p){
+  const top = 152 - (p/100)*84; // 満タンで y=68 まで上がる
+  return `<svg class="piggy" viewBox="0 0 220 170" role="img" aria-label="ちょきんばこ">
+    <defs><clipPath id="body"><ellipse cx="105" cy="100" rx="72" ry="54"/></clipPath></defs>
+    <path d="M40 150 l6 16 M78 152 l0 16 M140 152 l0 16 M172 146 l7 15"
+      stroke="#5A4152" stroke-width="9" stroke-linecap="round"/>
+    <path d="M182 78 q22 -8 14 -26 q-6 -13 -18 -6" fill="none" stroke="#5A4152" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="105" cy="100" rx="72" ry="54" fill="#fff"/>
+    <g clip-path="url(#body)">
+      <rect x="30" y="${top}" width="160" height="120" fill="#FFD166"/>
+      <path d="M30 ${top} q20 -9 40 0 t40 0 t40 0 t40 0 v14 h-160z" fill="#FFD166"/>
+      <circle cx="70" cy="${top+26}" r="9" fill="#F2B93F"/>
+      <circle cx="118" cy="${top+44}" r="11" fill="#F2B93F"/>
+      <circle cx="150" cy="${top+20}" r="8" fill="#F2B93F"/>
+    </g>
+    <ellipse cx="105" cy="100" rx="72" ry="54" fill="none" stroke="#5A4152" stroke-width="6"/>
+    <path d="M62 54 q-6 -30 22 -22" fill="#FF8FA8" stroke="#5A4152" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="92" y="52" width="42" height="9" rx="4.5" fill="#5A4152"/>
+    <ellipse cx="168" cy="104" rx="20" ry="16" fill="#FFC2D1" stroke="#5A4152" stroke-width="6"/>
+    <circle cx="163" cy="104" r="3.4" fill="#5A4152"/><circle cx="174" cy="104" r="3.4" fill="#5A4152"/>
+    <circle cx="132" cy="86" r="5" fill="#5A4152"/>
+    <path d="M126 112 q8 7 16 0" fill="none" stroke="#FF8FA8" stroke-width="5" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ========= 画面：スタンプ ========= */
+function renderStamp(){
+  const days = [...new Set(state.entries.map(e=>e.date))].sort();
+  const total = days.length, filled = total % 10, cards = Math.floor(total/10);
+  $("#cardNo").textContent = L(`${cards+1}まいめ の カード`, `${cards+1}枚目のカード`);
+  $("#stampGrid").innerHTML = Array.from({length:10},(_,i)=>
+    `<div class="slot ${i < (filled===0 && total>0 ? 10 : filled) ? "fill":""}">🌸</div>`).join("");
+  $("#stampNote").innerHTML = total===0
+    ? L("きろくを つけた ひに スタンプが 1こ たまるよ。","記録をつけた日にスタンプが1こたまるよ。")
+    : L(`ぜんぶで <b>${total}こ</b> たまったよ！${cards>0? `カード <b>${cards}まい</b> かんせい🎉`:""}`,
+        `全部で <b>${total}こ</b> たまったよ！${cards>0? `カード <b>${cards}枚</b> 完成🎉`:""}`);
+}
+
+/* ========= タブ ========= */
+function switchTab(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.tab===id));
+  if(id==="s-goal") renderGoal();
+  if(id==="s-stamp") renderStamp();
+  window.scrollTo({top:0});
+}
+document.querySelectorAll(".tab").forEach(t=> t.onclick = ()=> switchTab(t.dataset.tab));
+
+/* ========= 入力シート ========= */
+let mode="in", picked=null, amt="";
+function openSheet(m){
+  mode=m; picked=null; amt="";
+  $("#sheetTitle").textContent = m==="in"
+    ? L("なにで もらった？","何でもらった？") : L("なにに つかった？","何に使った？");
+  $("#cats").innerHTML = CATS[m].map(c=>
+    `<button class="cat-b" data-c="${c[0]}"><span>${c[2]}</span><b>${L(c[0],c[1])}</b></button>`).join("");
+  $("#cats").querySelectorAll(".cat-b").forEach(b=> b.onclick=()=>{
+    picked=b.dataset.c;
+    $("#cats").querySelectorAll(".cat-b").forEach(x=>x.classList.remove("sel"));
+    b.classList.add("sel"); refresh();
+  });
+  $("#doneBtn").textContent = L("シールを はる","シールを貼る");
+  refresh();
+  $("#veil").classList.add("on"); $("#sheet").classList.add("on");
+}
+function closeSheet(){ $("#veil").classList.remove("on"); $("#sheet").classList.remove("on"); }
+document.querySelectorAll("[data-open]").forEach(b=> b.onclick=()=>openSheet(b.dataset.open));
+$("#cancelBtn").onclick = closeSheet;
+$("#veil").onclick = ()=>{ closeSheet(); closeSet(); $("#popWrap").classList.remove("on"); };
+
+/* ========= せってい（ひらがな／漢字） ========= */
+function openSet(){
+  $("#lvPick").querySelectorAll("button").forEach(b=> b.classList.toggle("sel", b.dataset.lv===state.level));
+  $("#veil").classList.add("on"); $("#setSheet").classList.add("on");
+}
+function closeSet(){ $("#setSheet").classList.remove("on"); $("#veil").classList.remove("on"); }
+$("#gearBtn").onclick = openSet;
+$("#setClose").onclick = closeSet;
+$("#lvPick").querySelectorAll("button").forEach(b=> b.onclick = async ()=>{
+  state.level = b.dataset.lv;
+  await save();
+  $("#lvPick").querySelectorAll("button").forEach(x=> x.classList.toggle("sel", x===b));
+  applyText(); renderBook(); renderGoal(); renderStamp();
+});
+
+/* 画面に固定で出ている文字を、いまの表示レベルで書き直す */
+function applyText(){
+  const d = new Date();
+  $("#today").textContent = L(`${d.getFullYear()}ねん ${d.getMonth()+1}がつ ${d.getDate()}にち`,
+                              `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`);
+  $("#h-book").textContent   = L("おこづかいちょう","おこづかい帳");
+  $("#h-goal").textContent   = L("ちょきん もくひょう","貯金目標");
+  $("#h-stamp").textContent  = "スタンプカード";
+  $("#t-stampsub").textContent = L("きろくした ひに 1こ たまるよ","記録した日に1こたまるよ");
+  $("#t-have").textContent   = L("いま もっている おかね","今もっているお金");
+  $("#t-yen1").textContent   = L("えん","円");
+  $("#t-yen2").textContent   = L("えん","円");
+  $("#t-in").innerHTML       = L("もらった","もらった") + "<small>プラス</small>";
+  $("#t-out").innerHTML      = L("つかった","つかった") + "<small>マイナス</small>";
+  $("#t-sec").textContent    = L("きろくシール","記録シール");
+  $("#t-tab1").textContent   = L("きろく","記録");
+  $("#t-tab2").textContent   = L("もくひょう","目標");
+  $("#t-tab3").textContent   = "スタンプ";
+  $("#cancelBtn").textContent = L("やめる","やめる");
+  $("#setTitle").textContent  = L("せってい","設定");
+  $("#setClose").textContent  = L("とじる","閉じる");
+  document.title = L("おこづかいちょう","おこづかい帳");
+}
+
+$("#pad").innerHTML = ["1","2","3","4","5","6","7","8","9","00","0","←"]
+  .map(k=>`<button class="key ${/[←0]{1}$/.test(k)&&(k==="←")?"fn":""}" data-k="${k}">${k}</button>`).join("");
+$("#pad").querySelectorAll(".key").forEach(k=> k.onclick=()=>{
+  const v=k.dataset.k;
+  if(v==="←") amt = amt.slice(0,-1);
+  else if(amt.length < 7) amt = (amt + v).replace(/^0+(?=\d)/,"").slice(0,7);
+  refresh();
+});
+function refresh(){
+  const n = parseInt(amt||"0",10);
+  $("#disp").textContent = yen(n);
+  const b = balance();
+  $("#warn").textContent = (mode==="out" && n > b)
+    ? L(`もっている おかね（${yen(b)}えん）より おおいよ`, `持っているお金（${yen(b)}円）より多いよ`) : "";
+  $("#doneBtn").disabled = !(picked && n>0);
+}
+$("#doneBtn").onclick = async ()=>{
+  const n = parseInt(amt||"0",10);
+  if(!picked || n<=0) return;
+  const before = balance();
+  const id = Date.now().toString(36);
+  state.entries.push({id, type:mode, cat:picked, amount:n, date:todayKey(), ts:Date.now()});
+  await save();
+  closeSheet();
+  renderBook(id);
+  if(mode==="in") flyCoin();
+  const after = balance();
+  if(state.goal && before < state.goal.amount && after >= state.goal.amount) confetti();
+  const days = new Set(state.entries.map(e=>e.date)).size;
+  if(days>0 && days%10===0) confetti();
+};
+function flyCoin(){
+  const c=document.createElement("div");
+  c.className="coin-fly"; c.textContent="🪙";
+  c.style.animation="drop 1s ease-in forwards";
+  document.querySelector(".wallet").appendChild(c);
+  setTimeout(()=>c.remove(),1000);
+}
+
+/* ========= 明細 ========= */
+function showDetail(id){
+  const e = state.entries.find(x=>x.id===id); if(!e) return;
+  const emo = catInfo(e.type,e.cat)[2];
+  const d = new Date(e.ts);
+  $("#popCard").innerHTML = `<div class="e">${emo}</div><div class="c">${esc(catLabel(e.type,e.cat))}</div>
+    <div class="v" style="color:${e.type==="in"?"#3FA792":"#E4718E"}">${e.type==="in"?"+":"−"}${yen(e.amount)}${L("えん","円")}</div>
+    <div class="d">${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日</div>
+    <div class="row"><button class="del" id="delB">${L("シールを はがす","シールをはがす")}</button>
+    <button class="close" id="closeB">${L("とじる","閉じる")}</button></div>`;
+  $("#popWrap").classList.add("on"); $("#veil").classList.add("on");
+  $("#closeB").onclick = hideDetail;
+  $("#delB").onclick = async ()=>{
+    state.entries = state.entries.filter(x=>x.id!==id);
+    await save(); hideDetail(); renderBook();
+  };
+}
+function hideDetail(){ $("#popWrap").classList.remove("on"); $("#veil").classList.remove("on"); }
+
+/* ========= 紙吹雪 ========= */
+function confetti(){
+  if(window.matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const w=document.createElement("div"); w.className="confetti";
+  const P=["🌸","✨","🎀","💖","⭐️","🌟"];
+  for(let i=0;i<16;i++){
+    const s=document.createElement("span");
+    s.textContent=P[i%P.length];
+    s.style.left=Math.random()*100+"%";
+    s.style.animationDelay=(Math.random()*.5)+"s";
+    s.style.fontSize=(16+Math.random()*16)+"px";
+    w.appendChild(s);
+  }
+  document.body.appendChild(w);
+  setTimeout(()=>w.remove(),3000);
+}
+
+/* ========= 起動 ========= */
+(async ()=>{
+  await load();
+  applyText();
+  renderBook(); renderGoal(); renderStamp();
+})();
+</script>
+</body>
+</html>
